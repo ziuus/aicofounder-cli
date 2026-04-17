@@ -51,11 +51,12 @@ def perform_research(query: str, max_results: int = 5) -> str:
 def validate_idea(idea: str, audience: str, progress: str, research_data: str) -> str:
     """Sends the idea and research to Gemini via the CLI bridge for analysis."""
     
-    prompt = f"""You are an elite AI Co-Founder and Startup Validator, similar to the aicofounder.ai platform.
-Your job is to critically analyze startup ideas, point out major flaws or weak assumptions, identify unique selling propositions (USPs), and provide a concrete execution roadmap.
+    prompt = f"""You are an elite AI Co-Founder and Venture Validator.
+Your job is to critically analyze any business idea, physical product, service, or startup vision. 
+Point out major flaws, logistical hurdles, or weak assumptions, identify unique selling propositions (USPs), and provide a concrete execution roadmap.
 
-You have been given the following information by the solo founder:
-**The Idea:** {idea}
+You have been given the following information by the founder:
+**The Vision:** {idea}
 **Target Audience:** {audience}
 **Current Progress:** {progress}
 
@@ -64,11 +65,11 @@ You also performed the following web research on competitors and market validati
 {research_data}
 
 Please generate a comprehensive, structured validation report in Markdown format. The report should include:
-1. **Executive Summary:** A brutal but fair assessment of the idea's viability.
-2. **Competitor Analysis:** Who else is doing this (based on the research)? What are their weaknesses?
-3. **The Roast (Weak Assumptions & Risks):** What could kill this startup? What is the founder ignoring?
-4. **Unique Selling Proposition (USP):** How can this founder stand out?
-5. **The Blueprint (Tech Stack & Tools):** Recommend specific, modern tools for building (e.g., frontend, backend, no-code, hosting, marketing). Keep it practical for a solo founder.
+1. **Executive Summary:** A brutal but fair assessment of the venture's viability.
+2. **Competitive Landscape:** Who else is doing this (directly or indirectly)? What are the barriers to entry?
+3. **The Roast (Critical Risks):** What could kill this business? Consider logistics, manufacturing, regulations, or market shifts.
+4. **Unique Selling Proposition (USP):** How can this founder dominate?
+5. **The Blueprint (Execution & Tools):** Recommend specific resources for building (e.g., supply chain, marketing, tech stack, or legal/operational tools).
 6. **Next Steps:** 3 concrete actions the founder should take *this week*.
 
 Be highly critical, data-driven, and actionable. Do not be overly polite if the idea has major flaws. Respond ONLY with the Markdown content.
