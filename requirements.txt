@@ -1,0 +1,3 @@
+duckduckgo-search
+rich
+python-dotenv
