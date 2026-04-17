@@ -30,6 +30,14 @@ source venv/bin/activate
 python main.py
 ```
 
+
+
+If it doesnt work
+
+```bash
+./venv/bin/python main.py 
+```
+
 Follow the interactive prompts to share your idea, target audience, and current progress!
 
 ## How it works
