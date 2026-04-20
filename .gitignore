@@ -1,6 +1,5 @@
-reports/
 venv/
-.venv/
 __pycache__/
-*.pyc
+reports/
 .env
+*.pyc

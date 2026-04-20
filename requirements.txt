@@ -1,3 +1,5 @@
 duckduckgo-search
 rich
 python-dotenv
+textual
+groq
