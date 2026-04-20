@@ -1,258 +1,200 @@
+/* Mission Control Aesthetic (Modern Dark Mode) */
 Screen {
-    background: #1e1e1e;
-    color: #cccccc;
+    background: #05070a;
+    color: #e6edf3;
 }
 
 Header {
-    background: #007acc;
-    color: white;
-    dock: top;
+    background: #0d1117;
+    color: #58a6ff;
+    text-style: bold;
+    height: 3;
+    content-align: center middle;
+    border-bottom: hkey #30363d;
 }
 
 Footer {
-    background: #007acc;
-    color: white;
-    dock: bottom;
+    background: #0d1117;
+    color: #8b949e;
+    border-top: hkey #30363d;
 }
 
-#app-grid {
+/* Mission Header Custom Component */
+MissionHeader {
+    height: 3;
+    background: #0d1117;
+    border-bottom: double #58a6ff;
+    padding: 0 1;
+}
+
+#app-title {
+    width: 1fr;
+    content-align: left middle;
+    color: #58a6ff;
+}
+
+#status-indicator {
+    width: auto;
+    content-align: right middle;
+    color: #3fb950;
+}
+
+/* Containers */
+.main-container {
     layout: grid;
-    grid-size: 3; /* For now, 1 for sidebar, 2 for main content + chat */
     grid-columns: 1fr 2fr;
     grid-rows: 1fr;
-    padding: 1;
+    padding: 1 2;
+    grid-gutter: 2;
 }
 
-#sidebar {
-    background: #252526;
-    border: solid #333333;
-    padding: 1 1;
-    height: 100%;
+.glass-panel {
+    background: #0d1117 80%;
+    border: tall #30363d;
+    padding: 1 2;
+    border-title-align: left;
+    border-title-color: #58a6ff;
 }
 
-.sidebar-title {
+.glass-panel:focus-within {
+    border: tall #58a6ff;
+}
+
+/* Hub / Project Selection */
+#startup-hub {
+    align: center middle;
+    padding: 2 4;
+}
+
+#hub-title {
     text-align: center;
-    margin-bottom: 1;
+    margin-bottom: 2;
     text-style: bold;
 }
 
-.phase-button {
+#proj-list {
+    height: 12;
+    border: solid #30363d;
+    background: #010409;
+    padding: 1;
+    margin-bottom: 1;
+}
+
+.proj-entry {
     width: 100%;
     margin-bottom: 1;
-    background: #3c3c3c;
-    color: #cccccc;
-    border: round #555555;
-    text-align: left;
+    background: #21262d;
+    border: none;
 }
 
-.phase-button:hover {
-    background: #007acc;
+.proj-entry:hover {
+    background: #3fb950;
     color: white;
 }
 
-.project-button {
-    width: 100%;
-    margin-top: 0;
-    background: #3c3c3c;
-    color: #cccccc;
-    border: round #555555;
-    text-align: left;
+#new_name {
+    margin-top: 1;
 }
 
-.project-button:hover {
-    background: #007acc;
-    color: white;
-}
-
-#main-content {
-    background: #1e1e1e;
-    border: solid #333333;
+/* Landing Grid */
+#landing-grid {
+    layout: grid;
+    grid-columns: 35 1fr;
     padding: 1 2;
-    height: 100%;
-    grid-column-span: 2; /* Main content and chat log occupy two columns */
-    overflow-y: scroll;
+    grid-gutter: 2;
 }
 
-#welcome-message {
+.p-btn {
+    width: 100%;
+    margin-bottom: 1;
+    background: #21262d;
+    border: none;
+    text-align: left;
+}
+
+.p-btn:hover {
+    background: #58a6ff;
+    color: white;
+}
+
+#proj-tag {
     text-align: center;
+    color: #58a6ff;
     margin-bottom: 2;
-    text-style: bold italic;
-    color: #007acc;
+    border-bottom: solid #30363d;
 }
 
-.chat-window {
-    background: #252526;
-    border: round #555555;
+/* Chat & Logs */
+.chat-box, .ideas_log, #research_log, #roast_log, #build_log {
+    background: #010409;
+    border: solid #30363d;
     padding: 1;
     margin-top: 1;
     height: 1fr;
 }
 
-#chat-input-container {
+#chat-row {
     height: auto;
-    dock: bottom;
-    padding: 1;
-    background: #252526;
-    border-top: solid #333333;
+    margin-top: 1;
 }
 
-#chat-input {
+#chat_in {
     width: 1fr;
 }
 
-#chat-send-button {
+#chat_send {
     width: auto;
     margin-left: 1;
 }
-#research-screen-grid {
-    layout: grid;
-    grid-size: 2;
-    grid-columns: 1fr 2fr;
-    grid-rows: 1fr;
-    padding: 1;
-    border: solid #333333;
-    height: 100%;
+
+/* Typography & Elements */
+.section-title {
+    text-style: bold;
+    color: #58a6ff;
+    margin-bottom: 1;
 }
 
-#research-controls {
-    background: #252526;
-    border: solid #333333;
-    padding: 1;
-    height: 100%;
-}
-
-#research-display {
-    background: #1e1e1e;
-    border: solid #333333;
-    padding: 1 2;
-    height: 100%;
-    overflow-y: scroll;
+.field-label {
+    text-style: bold;
+    color: #8b949e;
+    margin-top: 1;
 }
 
 .description {
-    margin-bottom: 1;
-    text-align: center;
-}
-
-#research_query_input {
-    width: 100%;
+    color: #8b949e;
     margin-bottom: 1;
 }
 
-#start_research_button {
+ProgressBar {
     width: 100%;
-    margin-bottom: 1;
+    margin: 1 0;
 }
 
-#research_progress_bar {
-    width: 100%;
-    margin-top: 1;
-    margin-bottom: 1;
+Input {
+    background: #0d1117;
+    border: solid #30363d;
+    color: #e6edf3;
+}
+
+Input:focus {
+    border: solid #58a6ff;
+}
+
+Button.-error {
+    background: #da3633;
+    color: white;
+}
+
+Button.-warning {
+    background: #d29922;
+    color: white;
+}
+
+Button.-success {
+    background: #238636;
+    color: white;
 }
 
 .hidden {
     display: none;
 }
-
-#canvas-screen-grid {
-    layout: grid;
-    grid-size: 2;
-    grid-columns: 1fr 2fr;
-    grid-rows: 1fr;
-    padding: 1;
-    border: solid #333333;
-    height: 100%;
-}
-
-#canvas-form {
-    background: #252526;
-    border: solid #333333;
-    padding: 1;
-    height: 100%;
-}
-
-#canvas-display {
-    background: #1e1e1e;
-    border: solid #333333;
-    padding: 1 2;
-    height: 100%;
-    overflow-y: scroll;
-}
-
-.canvas-label {
-    margin-top: 1;
-    margin-bottom: 0;
-    text-style: bold;
-    color: #5d87a7; /* A subtle blue for labels */
-}
-
-#validation-screen-grid {
-    layout: grid;
-    grid-size: 2;
-    grid-columns: 1fr 2fr;
-    grid-rows: 1fr;
-    padding: 1;
-    border: solid #333333;
-    height: 100%;
-}
-
-#validation-controls {
-    background: #252526;
-    border: solid #333333;
-    padding: 1;
-    height: 100%;
-}
-
-#validation-display {
-    background: #1e1e1e;
-    border: solid #333333;
-    padding: 1 2;
-    height: 100%;
-    overflow-y: scroll;
-}
-
-#validation_progress_bar {
-    width: 100%;
-    margin-top: 1;
-    margin-bottom: 1;
-}
-
-#build-screen-grid {
-    layout: grid;
-    grid-size: 2;
-    grid-columns: 1fr 2fr;
-    grid-rows: 1fr;
-    padding: 1;
-    border: solid #333333;
-    height: 100%;
-}
-
-#build-controls {
-    background: #252526;
-    border: solid #333333;
-    padding: 1;
-    height: 100%;
-}
-
-#build-display {
-    background: #1e1e1e;
-    border: solid #333333;
-    padding: 1 2;
-    height: 100%;
-    overflow-y: scroll;
-}
-
-#mvp_roadmap_log, #website_log, #marketing_log {
-    background: #252526;
-    border: round #555555;
-    padding: 1;
-    margin-top: 1;
-    height: 1fr; /* Allows them to expand as needed within the scrollable area */
-}
-
-#mvp_roadmap_progress_bar, #website_progress_bar, #marketing_progress_bar {
-    width: 100%;
-    margin-top: 1;
-    margin-bottom: 1;
-}
-
