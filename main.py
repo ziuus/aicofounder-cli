@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Prompt
+from rich.prompt import Prompt, Confirm
 from rich.markdown import Markdown
 from rich.text import Text
 from rich.spinner import Spinner
@@ -48,9 +48,21 @@ def perform_research(query: str, max_results: int = 5) -> str:
         results_text = f"Error performing research: {e}"
     return results_text
 
-def validate_idea(idea: str, audience: str, progress: str, research_data: str) -> str:
+def validate_idea(idea: str, audience: str, progress: str, research_data: str, repo_path: str = None) -> str:
     """Sends the idea and research to Gemini via the CLI bridge for analysis."""
     
+    codebase_instruction = ""
+    if repo_path:
+        codebase_instruction = f"""
+**MVP Codebase Analysis:**
+The founder has provided the codebase for their MVP located in the included directory.
+Please use your tools (like list_directory, read_file) to explore and analyze the codebase to:
+- Assess the technical maturity and scalability.
+- Identify key features already implemented.
+- Spot potential technical debt or architectural flaws.
+- Evaluate if the tech stack aligns with the target audience and USPs.
+"""
+
     prompt = f"""You are an elite AI Co-Founder and Venture Validator.
 Your job is to critically analyze any business idea, physical product, service, or startup vision. 
 Point out major flaws, logistical hurdles, or weak assumptions, identify unique selling propositions (USPs), and provide a concrete execution roadmap.
@@ -59,6 +71,7 @@ You have been given the following information by the founder:
 **The Vision:** {idea}
 **Target Audience:** {audience}
 **Current Progress:** {progress}
+{codebase_instruction}
 
 You also performed the following web research on competitors and market validation:
 **Market Research Data:**
@@ -66,18 +79,25 @@ You also performed the following web research on competitors and market validati
 
 Please generate a comprehensive, structured validation report in Markdown format. The report should include:
 1. **Executive Summary:** A brutal but fair assessment of the venture's viability.
-2. **Competitive Landscape:** Who else is doing this (directly or indirectly)? What are the barriers to entry?
-3. **The Roast (Critical Risks):** What could kill this business? Consider logistics, manufacturing, regulations, or market shifts.
-4. **Unique Selling Proposition (USP):** How can this founder dominate?
-5. **The Blueprint (Execution & Tools):** Recommend specific resources for building (e.g., supply chain, marketing, tech stack, or legal/operational tools).
-6. **Next Steps:** 3 concrete actions the founder should take *this week*.
+2. **MVP Technical Audit (if codebase provided):** Analysis of the current implementation, its strengths, and weaknesses.
+3. **Competitive Landscape:** Who else is doing this (directly or indirectly)? What are the barriers to entry?
+4. **The Roast (Critical Risks):** What could kill this business? Consider logistics, manufacturing, regulations, or market shifts.
+5. **Unique Selling Proposition (USP):** How can this founder dominate?
+6. **The Blueprint (Execution & Tools):** Recommend specific resources for building (e.g., supply chain, marketing, tech stack, or legal/operational tools).
+7. **Next Steps:** 3 concrete actions the founder should take *this week*.
 
 Be highly critical, data-driven, and actionable. Do not be overly polite if the idea has major flaws. Respond ONLY with the Markdown content.
 """
     try:
+        # Construct the command
+        cmd = ["gemini", "-y", "--output-format", "json"]
+        if repo_path:
+            cmd.extend(["--include-directories", os.path.abspath(repo_path)])
+        cmd.extend(["-p", prompt])
+        
         # Run the gemini command in headless mode
         result = subprocess.run(
-            ["gemini", "--output-format", "json", "-p", prompt],
+            cmd,
             capture_output=True,
             text=True,
             check=True
@@ -112,6 +132,13 @@ def main():
     audience = Prompt.ask("\n[cyan]Who is your exact target audience?[/cyan]\n[dim](e.g., Recent college graduates in tech)[/dim]")
     progress = Prompt.ask("\n[cyan]What is your current progress?[/cyan]\n[dim](e.g., Just an idea, built a landing page, have an MVP)[/dim]")
     
+    repo_path = None
+    if Confirm.ask("\n[cyan]Would you like to analyze an existing codebase/MVP?[/cyan]"):
+        repo_path = Prompt.ask("[cyan]Enter the local path to your repository[/cyan]")
+        if not os.path.exists(repo_path):
+            console.print("[red]Error: Path does not exist. Proceeding without codebase analysis.[/red]")
+            repo_path = None
+    
     console.print("\n[bold]Phase 2: Deep Research[/bold]")
     research_query = f"{idea} startup competitors products"
     
@@ -120,8 +147,12 @@ def main():
     console.print("[green]✓ Research complete.[/green]")
     
     console.print("\n[bold]Phase 3 & 4: Validation, Roasting, & The Blueprint[/bold]")
-    with console.status("[bold magenta]Analyzing market gaps and challenging assumptions...", spinner="bouncingBar"):
-        validation_report = validate_idea(idea, audience, progress, research_data)
+    status_msg = "Analyzing market gaps and challenging assumptions..."
+    if repo_path:
+        status_msg = "Analyzing codebase and market assumptions..."
+        
+    with console.status(f"[bold magenta]{status_msg}[/bold magenta]", spinner="bouncingBar"):
+        validation_report = validate_idea(idea, audience, progress, research_data, repo_path)
     
     console.print("\n[bold green]✓ Validation complete. Here is your report:[/bold green]\n")
     
@@ -131,11 +162,24 @@ def main():
     
     # Save to file
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"validation_report_{timestamp}.md"
+    
+    # Sanitize idea for filename
+    clean_idea = re.sub(r'[^\w\s-]', '', idea.lower())
+    clean_idea = re.sub(r'[-\s]+', '_', clean_idea).strip('_')
+    if len(clean_idea) > 50:
+        clean_idea = clean_idea[:50]
+        
+    filename = f"{clean_idea}_{timestamp}.md"
+    reports_dir = "reports"
+    
     try:
-        with open(filename, "w", encoding="utf-8") as f:
+        if not os.path.exists(reports_dir):
+            os.makedirs(reports_dir)
+            
+        filepath = os.path.join(reports_dir, filename)
+        with open(filepath, "w", encoding="utf-8") as f:
             f.write(validation_report)
-        console.print(f"\n[bold green]Report successfully saved to {filename}[/bold green]")
+        console.print(f"\n[bold green]Report successfully saved to {filepath}[/bold green]")
     except Exception as e:
         console.print(f"\n[bold red]Failed to save report: {e}[/bold red]")
 

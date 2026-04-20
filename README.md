@@ -8,6 +8,7 @@ A powerful, standalone Python CLI application that acts as your AI Co-Founder. I
 - **Rich Terminal UI**: Gorgeous formatting, spinners, and Markdown rendering powered by `rich`.
 - **Autonomous Research**: Free, real-time web scraping using `duckduckgo-search` to find direct competitors and market data.
 - **Brutal Validation**: Critically analyzes your idea, points out flaws, identifies your USP, and gives you a tech stack roadmap.
+- **MVP Codebase Validation**: (New!) Analyze your existing repository to audit your code's scalability, technical debt, and implementation maturity.
 - **Auto-Reports**: Saves a detailed `.md` report of your validation session to your local machine.
 
 ## Installation
