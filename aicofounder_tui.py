@@ -1,5 +1,5 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Static, Button, TextLog, Input, ProgressBar
+from textual.widgets import Header, Footer, Static, Button, RichLog, Input, ProgressBar
 from textual.containers import Container, VerticalScroll, Horizontal
 from textual.binding import Binding
 from textual.screen import Screen
@@ -35,41 +35,37 @@ class IdeaDiscoveryScreen(Screen):
                 yield Button("Back to Main", id="back_to_main_button", classes="project-button")
             with VerticalScroll(id="idea-discovery-display"):
                 yield Static("[bold blue]Generated Ideas[/bold blue]", classes="sidebar-title")
-                yield TextLog(id="generated_ideas_log", wrap=True)
+                yield RichLog(id="generated_ideas_log", wrap=True, highlight=True, markup=True)
         yield Footer()
 
     def on_mount(self) -> None:
         if self.current_project.get("generated_ideas"):
-            self.query_one("#generated_ideas_log", TextLog).write(self.current_project["generated_ideas"])
+            self.query_one("#generated_ideas_log", RichLog).write(self.current_project["generated_ideas"])
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "find_ideas_button":
             skills = self.skills_input.value.strip()
             interests = self.interests_input.value.strip()
             if not skills and not interests:
-                self.query_one("#generated_ideas_log", TextLog).write("[bold red]Please enter your skills or interests.[/bold red]")
+                self.query_one("#generated_ideas_log", RichLog).write("[bold red]Please enter your skills or interests.[/bold red]")
                 return
             
             self.query_one("#idea_discovery_progress_bar").remove_class("hidden")
-            self.query_one("#idea_discovery_progress_bar").update(progress=0)
-            self.query_one("#generated_ideas_log", TextLog).write(f"[bold cyan]Finding ideas based on skills '{skills}' and interests '{interests}'...[/bold cyan]\n")
+            self.query_one("#generated_ideas_log", RichLog).write(f"[bold cyan]Asking AI for ideas based on your profile...[/bold cyan]\n")
             self.run_worker(self.perform_background_idea_discovery(skills, interests), exclusive=True)
         elif event.button.id == "back_to_main_button":
             self.app.pop_screen()
 
     async def perform_background_idea_discovery(self, skills: str, interests: str):
-        self.query_one("#idea_discovery_progress_bar").update(progress=10)
-        # Placeholder for AI agent call
-        generated_ideas = "Idea 1: AI-powered personalized financial advisor for indie developers.\nIdea 2: Educational platform using gamification for learning Python."
-        self.query_one("#idea_discovery_progress_bar").update(progress=100)
-        self.query_one("#generated_ideas_log", TextLog).write(generated_ideas)
+        generated_ideas = await self.app.run_in_thread(self.agent_manager.current_engine.find_ideas, skills, interests)
+        self.query_one("#generated_ideas_log", RichLog).write(generated_ideas)
         self.query_one("#idea_discovery_progress_bar").add_class("hidden")
         
         self.current_project["generated_ideas"] = generated_ideas
         self.current_project["user_skills"] = skills
         self.current_project["user_interests"] = interests
         self.state_manager.save_project(self.current_project["name"], self.current_project)
-        self.query_one("#generated_ideas_log", TextLog).write("[bold green]Generated ideas saved to project.[/bold green]")
+        self.query_one("#generated_ideas_log", RichLog).write("\n[bold green]Generated ideas saved to project.[/bold green]")
 
 class ResearchScreen(Screen):
     def __init__(self, state_manager: StateManager, agent_manager: AgentManager, current_project: dict):
@@ -90,25 +86,26 @@ class ResearchScreen(Screen):
                 yield Button("Back to Main", id="back_to_main_button", classes="project-button")
             with VerticalScroll(id="research-display"):
                 yield Static("[bold blue]Research Results[/bold blue]", classes="sidebar-title")
-                yield TextLog(id="research_results_log", wrap=True)
+                yield RichLog(id="research_results_log", wrap=True, highlight=True, markup=True)
         yield Footer()
 
     def on_mount(self) -> None:
         if self.current_project.get("research_data"):
-            self.query_one("#research_results_log", TextLog).write(self.current_project["research_data"])
+            self.query_one("#research_results_log", RichLog).write(self.current_project["research_data"])
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "start_research_button":
             query = self.research_query_input.value.strip()
             if query:
                 self.query_one("#research_progress_bar").remove_class("hidden")
+                self.query_one("#research_results_log", RichLog).write(f"[bold cyan]Performing autonomous research on: {query}[/bold cyan]\n")
                 self.run_worker(self.perform_background_research(query), exclusive=True)
         elif event.button.id == "back_to_main_button":
             self.app.pop_screen()
 
     async def perform_background_research(self, query: str):
         results = await self.app.run_in_thread(self.agent_manager.current_engine.perform_research, query)
-        self.query_one("#research_results_log", TextLog).write(results)
+        self.query_one("#research_results_log", RichLog).write(results)
         self.query_one("#research_progress_bar").add_class("hidden")
         self.current_project["research_data"] = results
         self.current_project["research_query"] = query
@@ -139,7 +136,7 @@ class CanvasScreen(Screen):
                 yield Button("Back to Main", id="back_to_main_button", classes="project-button")
             with VerticalScroll(id="canvas-display"):
                 yield Static("[bold blue]Canvas Summary[/bold blue]", classes="sidebar-title")
-                yield TextLog(id="canvas_summary_log", wrap=True)
+                yield RichLog(id="canvas_summary_log", wrap=True, markup=True)
         yield Footer()
 
     def on_mount(self) -> None:
@@ -152,15 +149,16 @@ class CanvasScreen(Screen):
             self.current_project["problem"] = self.problem_input.value.strip()
             self.state_manager.save_project(self.current_project["name"], self.current_project)
             self.update_summary()
+            self.app.notify("Canvas saved successfully!", title="Project Updated")
         elif event.button.id == "back_to_main_button":
             self.app.pop_screen()
 
     def update_summary(self) -> None:
-        log = self.query_one("#canvas_summary_log", TextLog)
+        log = self.query_one("#canvas_summary_log", RichLog)
         log.clear()
-        log.write(f"Idea: {self.current_project.get('idea', 'N/A')}")
-        log.write(f"Audience: {self.current_project.get('audience', 'N/A')}")
-        log.write(f"Problem: {self.current_project.get('problem', 'N/A')}")
+        log.write(f"[bold]Idea:[/bold] {self.current_project.get('idea', 'N/A')}")
+        log.write(f"[bold]Audience:[/bold] {self.current_project.get('audience', 'N/A')}")
+        log.write(f"[bold]Problem:[/bold] {self.current_project.get('problem', 'N/A')}")
 
 class ValidationScreen(Screen):
     def __init__(self, state_manager: StateManager, agent_manager: AgentManager, current_project: dict):
@@ -174,22 +172,27 @@ class ValidationScreen(Screen):
         with Container(id="validation-screen-grid"):
             with VerticalScroll(id="validation-controls"):
                 yield Static("[bold green]Phase 3: Validation[/bold green]", classes="sidebar-title")
-                yield Button("Run Validation", id="run_validation_button", variant="primary")
+                yield Button("Run Brutal Validation", id="run_validation_button", variant="primary")
+                yield Button("Export MD Report", id="export_report_button", variant="success")
                 yield ProgressBar(total=100, id="validation_progress_bar", classes="hidden")
                 yield Button("Back to Main", id="back_to_main_button", classes="project-button")
             with VerticalScroll(id="validation-display"):
                 yield Static("[bold blue]Validation Report[/bold blue]", classes="sidebar-title")
-                yield TextLog(id="validation_report_log", wrap=True)
+                yield RichLog(id="validation_report_log", wrap=True, highlight=True, markup=True)
         yield Footer()
     
     def on_mount(self) -> None:
         if self.current_project.get("validation_report"):
-            self.query_one("#validation_report_log", TextLog).write(self.current_project["validation_report"])
+            self.query_one("#validation_report_log", RichLog).write(self.current_project["validation_report"])
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "run_validation_button":
             self.query_one("#validation_progress_bar").remove_class("hidden")
+            self.query_one("#validation_report_log", RichLog).write("[bold cyan]Running Venture Validator... Be prepared for the roast.[/bold cyan]\n")
             self.run_worker(self.perform_background_validation(), exclusive=True)
+        elif event.button.id == "export_report_button":
+            filepath = self.state_manager.export_report(self.current_project["name"])
+            self.app.notify(f"Report saved to {filepath}", title="Export Complete")
         elif event.button.id == "back_to_main_button":
             self.app.pop_screen()
 
@@ -197,10 +200,11 @@ class ValidationScreen(Screen):
         idea = self.current_project.get("idea", "")
         audience = self.current_project.get("audience", "")
         if not idea or not audience:
-            self.query_one("#validation_report_log", TextLog).write("[red]Fill Canvas first![/red]")
+            self.query_one("#validation_report_log", RichLog).write("[bold red]Fill Canvas first![/bold red]")
+            self.query_one("#validation_progress_bar").add_class("hidden")
             return
         report = await self.app.run_in_thread(self.agent_manager.current_engine.validate_idea, idea, audience, "Build stage", self.current_project.get("research_data", ""))
-        self.query_one("#validation_report_log", TextLog).write(report)
+        self.query_one("#validation_report_log", RichLog).write(report)
         self.query_one("#validation_progress_bar").add_class("hidden")
         self.current_project["validation_report"] = report
         self.state_manager.save_project(self.current_project["name"], self.current_project)
@@ -211,6 +215,7 @@ class BuildScreen(Screen):
         self.state_manager = state_manager
         self.agent_manager = agent_manager
         self.current_project = current_project
+        self.repo_path_input = Input(placeholder="Path to codebase (e.g., .)", id="repo_path_input")
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -218,25 +223,38 @@ class BuildScreen(Screen):
             with VerticalScroll(id="build-controls"):
                 yield Static("[bold green]Phase 4: Build[/bold green]", classes="sidebar-title")
                 yield Button("Generate Roadmap", id="gen_roadmap", variant="primary")
-                yield Button("Generate Website", id="gen_site", variant="primary")
-                yield Button("Generate Marketing", id="gen_marketing", variant="primary")
+                yield Static("\n[bold]Codebase Audit[/bold]", classes="canvas-label")
+                yield self.repo_path_input
+                yield Button("Run Technical Audit", id="run_audit", variant="warning")
+                yield ProgressBar(id="build_progress_bar", classes="hidden")
                 yield Button("Back to Main", id="back_to_main_button", classes="project-button")
             with VerticalScroll(id="build-display"):
-                yield TextLog(id="build_log", wrap=True)
+                yield Static("[bold blue]Output[/bold blue]", classes="sidebar-title")
+                yield RichLog(id="build_log", wrap=True, highlight=True, markup=True)
         yield Footer()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        log = self.query_one("#build_log", TextLog)
+        log = self.query_one("#build_log", RichLog)
         if event.button.id == "gen_roadmap":
-            log.write("[cyan]Generating roadmap...[/cyan]")
-            self.current_project["mvp_roadmap"] = "Step 1: Build TUI. Step 2: Build Web."
+            log.write("[bold cyan]Generating technical roadmap...[/bold cyan]")
+            # Future: Call agent_manager.current_engine.generate_roadmap
+            self.current_project["mvp_roadmap"] = "Phase 1: Basic TUI. Phase 2: Groq Integration. Phase 3: Web Dashboard."
             self.state_manager.save_project(self.current_project["name"], self.current_project)
-        elif event.button.id == "gen_site":
-            log.write("[cyan]Generating site...[/cyan]")
-        elif event.button.id == "gen_marketing":
-            log.write("[cyan]Generating marketing...[/cyan]")
+            log.write(self.current_project["mvp_roadmap"])
+        elif event.button.id == "run_audit":
+            path = self.repo_path_input.value.strip() or "."
+            log.write(f"[bold cyan]Auditing codebase at: {path}[/bold cyan]\n")
+            self.query_one("#build_progress_bar").remove_class("hidden")
+            self.run_worker(self.perform_background_audit(path), exclusive=True)
         elif event.button.id == "back_to_main_button":
             self.app.pop_screen()
+
+    async def perform_background_audit(self, path: str):
+        audit = await self.app.run_in_thread(self.agent_manager.current_engine.analyze_codebase, path)
+        self.query_one("#build_log", RichLog).write(audit)
+        self.query_one("#build_progress_bar").add_class("hidden")
+        self.current_project["codebase_audit"] = audit
+        self.state_manager.save_project(self.current_project["name"], self.current_project)
 
 # --- Main Application Logic ---
 
@@ -260,8 +278,9 @@ class MainScreen(Screen):
                 yield Button("4. Build", id="phase_build", classes="phase-button")
                 yield Button("Switch Project", id="switch_project", classes="project-button")
             with VerticalScroll(id="main-content"):
-                yield Static(f"Phase: [bold cyan]{self.current_project.get('current_phase', 'Home').title()}[/bold cyan]", id="current-phase-display")
-                yield TextLog(id="chat-log", classes="chat-window")
+                yield Static(f"Welcome to [bold cyan]AICoFounder[/bold cyan]", id="current-phase-display")
+                yield Static("\nYour mission-control for startup execution. Select a phase on the left to begin.", classes="description")
+                yield RichLog(id="chat-log", classes="chat-window", markup=True)
                 with Horizontal(id="chat-input-container"):
                     yield Input(placeholder="Ask your AI Co-founder...", id="chat-input")
                     yield Button("Send", id="chat-send-button", variant="primary")
@@ -291,9 +310,11 @@ class ProjectScreen(Screen):
         yield Header()
         with Container(id="project-selection"):
             yield Static("[bold green]AICoFounder Workspace[/bold green]", classes="sidebar-title")
-            for p in self.state_manager.list_projects():
-                yield Button(p, id=f"load_{p}", classes="project-list-button")
-            yield Input(placeholder="New project name", id="new_p_name")
+            yield Static("Select an existing project or create a new one to start your journey.", classes="description")
+            with VerticalScroll(id="project-list"):
+                for p in self.state_manager.list_projects():
+                    yield Button(p, id=f"load_{p}", classes="project-list-button")
+            yield Input(placeholder="New project name (e.g. MySaaS)", id="new_p_name")
             yield Button("Create New Project", id="create_p", variant="primary")
         yield Footer()
 
@@ -306,7 +327,7 @@ class ProjectScreen(Screen):
         elif event.button.id == "create_p":
             name = self.query_one("#new_p_name", Input).value.strip()
             if name:
-                data = {"name": name, "current_phase": "research"}
+                data = {"name": name, "current_phase": "discovery"}
                 self.state_manager.save_project(name, data)
                 self.app.push_screen(MainScreen(self.state_manager, self.agent_manager, data))
 
