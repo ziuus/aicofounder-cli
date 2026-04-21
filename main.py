@@ -1,5 +1,5 @@
-from aicofounder_tui import AICofounderTUI
+from venture_tui import VentureTUI
 
 if __name__ == "__main__":
-    app = AICofounderTUI()
+    app = VentureTUI()
     app.run()

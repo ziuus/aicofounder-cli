@@ -16,7 +16,7 @@ class MissionHeader(Static):
     """A sleek, modern header with dynamic status."""
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield Label("🚀 [bold]AICoFounder[/bold] | Mission Control", id="app-title")
+            yield Label("🚀 [bold]Venture[/bold] | Mission Control", id="app-title")
             yield Static("", id="status-indicator")
 
 # --- Phase Screens (Modernized) ---
@@ -300,7 +300,7 @@ class ProjectScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical(id="startup-hub"):
-            yield Static("✨ [bold cyan]AICoFounder Hub[/bold cyan]", id="hub-title")
+            yield Static("✨ [bold cyan]Venture Hub[/bold cyan]", id="hub-title")
             with VerticalScroll(id="proj-list"):
                 for p in self.app.state_manager.list_projects():
                     yield Button(f"🚀 {p}", id=f"load_{p}", classes="proj-entry")
@@ -321,12 +321,12 @@ class ProjectScreen(Screen):
                 self.app.state_manager.save_project(name, data)
                 self.app.push_screen(MainScreen(self.app.state_manager, self.app.agent_manager, data))
 
-class AICofounderTUI(App):
-    CSS_PATH = "aicofounder.css"
+class VentureTUI(App):
+    CSS_PATH = "venture.css"
     def on_mount(self) -> None:
         self.state_manager = StateManager()
         self.agent_manager = AgentManager()
         self.push_screen(ProjectScreen())
 
 if __name__ == "__main__":
-    AICofounderTUI().run()
+    VentureTUI().run()
