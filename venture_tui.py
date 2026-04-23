@@ -8,7 +8,7 @@ from textual.reactive import reactive
 from textual.worker import Worker, WorkerState
 
 from state_manager import StateManager
-from agent_manager import AgentManager
+from agent_manager import VentureAgentManager
 
 # --- Modern Components ---
 
@@ -325,8 +325,11 @@ class VentureTUI(App):
     CSS_PATH = "venture.css"
     def on_mount(self) -> None:
         self.state_manager = StateManager()
-        self.agent_manager = AgentManager()
+        self.agent_manager = VentureAgentManager()
         self.push_screen(ProjectScreen())
 
-if __name__ == "__main__":
+def main():
     VentureTUI().run()
+
+if __name__ == "__main__":
+    main()

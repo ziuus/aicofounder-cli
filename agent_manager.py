@@ -166,8 +166,8 @@ class LightweightGeminiEngine(BaseAgentEngine):
         prompt = "Analyze this codebase for scalability and technical debt."
         return self._run_gemini_cli(prompt, repo_path)
 
-# --- AgentManager for switching between engines ---
-class AgentManager:
+# --- VentureAgentManager for switching between engines ---
+class VentureAgentManager:
     def __init__(self, default_engine: str = "groq"):
         self.engines = {
             "lightweight": LightweightGeminiEngine(),
@@ -177,7 +177,6 @@ class AgentManager:
         # Fallback logic if groq is requested but not available
         self._current_engine_name = default_engine
         if self._current_engine_name == "groq" and not self.engines["groq"].is_available():
-            # Only switch if lightweight is actually viable (inherits gemini CLI)
             self._current_engine_name = "lightweight"
         
         if self._current_engine_name not in self.engines:
@@ -186,6 +185,23 @@ class AgentManager:
     @property
     def current_engine(self) -> BaseAgentEngine:
         return self.engines[self._current_engine_name]
+
+    async def get_analysis_stream(self, name, idea, audience):
+        """
+        A streaming generator for the minimal CLI mode.
+        This provides the high-tech 'streaming' feel.
+        """
+        # For now, we simulate streaming by yielding chunks from the full validation
+        # In a future update, we can use actual streaming from the Groq/Gemini APIs
+        research = self.current_engine.perform_research(f"{name} {idea} market analysis")
+        report = self.current_engine.validate_idea(idea, audience, "Startup Concept", research)
+        
+        # Stream the report character by character or word by word for the 'vibe'
+        words = report.split(" ")
+        for i in range(0, len(words), 3):
+            yield " ".join(words[i:i+3]) + " "
+            import asyncio
+            await asyncio.sleep(0.02)
 
     def set_engine(self, engine_name: str):
         if engine_name not in self.engines:
