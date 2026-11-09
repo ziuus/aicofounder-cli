@@ -2,6 +2,10 @@
 
 A powerful, standalone Python CLI application that acts as your AI Co-Founder. It performs deep web research, validates your startup ideas, roasts your weak assumptions, and provides a concrete blueprint for building your product—all using your existing **Gemini CLI** authentication.
 
+> Building this in the open — if it saves you time, a star helps others find it.
+> Found a bug, or have an idea? [Open an issue](https://github.com/ziuus/aicofounder-cli/issues).
+> New validation prompts and research sources welcome.
+
 ## Features
 
 - **Gemini CLI Bridge**: No separate API keys or quotas to manage. It uses your existing `gemini` login.
